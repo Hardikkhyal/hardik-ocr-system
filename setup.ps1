@@ -64,11 +64,11 @@ if (Test-Path $gradlePath) {
     
     Set-Content $gradlePath $gradleContent
     
-    # 3. Create proguard-rules.pro file to ignore missing ML Kit classes during R8 minification
+    # 3. Create proguard-rules.pro file to ignore missing ML Kit classes and prevent R8 stripping
     $proguardPath = "android/app/proguard-rules.pro"
-    $proguardRules = "-dontwarn com.google.mlkit.vision.text.**"
+    $proguardRules = "-keep class com.google.mlkit.** { *; }`n-keep interface com.google.mlkit.** { *; }`n-dontwarn com.google.mlkit.**`n-dontwarn com.google.mlkit.vision.text.**"
     Set-Content $proguardPath $proguardRules
-    Write-Host "Successfully generated proguard-rules.pro." -ForegroundColor Green
+    Write-Host "Successfully generated proguard-rules.pro with ML Kit keep rules." -ForegroundColor Green
 } else {
     Write-Host "[ERROR] Could not find android/app/build.gradle. Ensure 'flutter create' ran successfully." -ForegroundColor Red
     Exit

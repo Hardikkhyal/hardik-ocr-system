@@ -86,12 +86,17 @@ def patch_project():
                     f.write(content)
                 print(f"Successfully added Theme.App.UCrop to {styles_path}")
 
-    # 4. Create android/app/proguard-rules.pro to ignore missing ML Kit classes during R8 minification
+    # 4. Create android/app/proguard-rules.pro to ignore missing ML Kit classes and prevent R8 stripping
     proguard_path = os.path.join('android', 'app', 'proguard-rules.pro')
-    proguard_rules = "-dontwarn com.google.mlkit.vision.text.**\n"
+    proguard_rules = (
+        "-keep class com.google.mlkit.** { *; }\n"
+        "-keep interface com.google.mlkit.** { *; }\n"
+        "-dontwarn com.google.mlkit.**\n"
+        "-dontwarn com.google.mlkit.vision.text.**\n"
+    )
     with open(proguard_path, 'w') as f:
         f.write(proguard_rules)
-    print("Successfully generated proguard-rules.pro.")
+    print("Successfully generated proguard-rules.pro with ML Kit keep rules.")
 
 if __name__ == '__main__':
     patch_project()
