@@ -71,12 +71,12 @@ class AppTheme {
           color: textPrimary,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: const CardThemeData(
         color: darkCard,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(
+          side: BorderSide(
             color: Color(0xFF2D3748), // Subtle glass-like border
             width: 1,
           ),
@@ -151,7 +151,7 @@ class AppTheme {
           color: lightTextPrimary,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: lightCard,
         elevation: 2,
         shadowColor: Colors.black.withOpacity(0.05),

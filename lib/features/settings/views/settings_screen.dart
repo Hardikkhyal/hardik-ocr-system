@@ -40,12 +40,12 @@ class SettingsScreen extends ConsumerWidget {
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.emerald.withOpacity(0.15),
+                color: const Color(0xFF10B981).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Text(
                 'Active',
-                style: TextStyle(color: Colors.emerald, fontWeight: FontWeight.bold, fontSize: 11),
+                style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 11),
               ),
             ),
           ),
@@ -94,13 +94,15 @@ class SettingsScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(left: 16.0, top: 16.0, bottom: 8.0),
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            fontSize: 12,
-            color: isDark ? Colors.white60 : Colors.black54,
-            letterSpacing: 0.5,
-          ),
-      child: Text(title.toUpperCase()),
+      child: Text(
+        title.toUpperCase(),
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              color: isDark ? Colors.white60 : Colors.black54,
+              letterSpacing: 0.5,
+            ),
+      ),
     );
   }
 

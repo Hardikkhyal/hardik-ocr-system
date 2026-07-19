@@ -218,7 +218,7 @@ class DashboardScreen extends ConsumerWidget {
                             const SizedBox(height: 6),
                             Text(
                               'Scan a document or import an image to begin extracting text offline.',
-                              textAlign: Center,
+                              textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                           ],
@@ -276,7 +276,7 @@ class DashboardScreen extends ConsumerWidget {
                           const SizedBox(height: 20),
                           Text(
                             _getLoadingText(ocrState.status),
-                            textAlign: Center,
+                            textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),

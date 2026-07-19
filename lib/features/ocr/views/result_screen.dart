@@ -122,7 +122,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Scan results updated successfully.'),
-        backgroundColor: Colors.emerald,
+        backgroundColor: Color(0xFF10B981),
       ),
     );
   }
