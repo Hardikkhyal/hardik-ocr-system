@@ -31,7 +31,9 @@ jobs:
           channel: 'stable'
 
       - name: Generate Flutter project templates
-        run: flutter create --org com.omniocr.offline --project-name offline_ocr_app .
+        run: |
+          flutter create --org com.omniocr.offline --project-name offline_ocr_app .
+          git checkout -- lib/main.dart pubspec.yaml
 
       - name: Patch Android configurations
         run: python patch_android.py

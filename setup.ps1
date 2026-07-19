@@ -22,8 +22,26 @@ Write-Host "Found Flutter: $flutterVersion" -ForegroundColor Green
 
 # Step 2: Initialize Flutter native platform wrappers
 Write-Host "[2/5] Initializing Flutter project template..." -ForegroundColor Yellow
-# Run flutter create which creates native wrappers without overwriting our existing custom code files
+
+# Backup custom main.dart and pubspec.yaml to prevent flutter create from overwriting them
+$mainBackupExists = Test-Path "lib/main.dart"
+$pubspecBackupExists = Test-Path "pubspec.yaml"
+
+if ($mainBackupExists) { Copy-Item "lib/main.dart" "lib/main.dart.bak" -Force }
+if ($pubspecBackupExists) { Copy-Item "pubspec.yaml" "pubspec.yaml.bak" -Force }
+
+# Run flutter create which creates native wrappers
 flutter create --org com.omniocr.offline --project-name offline_ocr_app .
+
+# Restore custom files
+if ($mainBackupExists) { 
+    Copy-Item "lib/main.dart.bak" "lib/main.dart" -Force 
+    Remove-Item "lib/main.dart.bak" -Force
+}
+if ($pubspecBackupExists) { 
+    Copy-Item "pubspec.yaml.bak" "pubspec.yaml" -Force 
+    Remove-Item "pubspec.yaml.bak" -Force
+}
 
 # Step 3: Configure Android Gradle (minSdkVersion = 21)
 Write-Host "[3/5] Configuring Android build parameters..." -ForegroundColor Yellow
