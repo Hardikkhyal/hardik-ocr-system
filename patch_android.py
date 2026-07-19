@@ -45,7 +45,7 @@ def patch_project():
             '        <activity\n'
             '            android:name="com.yalantis.ucrop.UCropActivity"\n'
             '            android:screenOrientation="portrait"\n'
-            '            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>'
+            '            android:theme="@style/Theme.App.UCrop"/>'
         )
         
         if 'com.yalantis.ucrop.UCropActivity' not in content:
@@ -57,13 +57,36 @@ def patch_project():
                     print("Successfully registered UCropActivity in Manifest.")
             else:
                 print("ERROR: Could not locate <application tag in Manifest.")
+        elif '@style/Theme.AppCompat.Light.NoActionBar' in content:
+            content = content.replace('@style/Theme.AppCompat.Light.NoActionBar', '@style/Theme.App.UCrop')
+            print("Successfully updated UCropActivity theme to @style/Theme.App.UCrop in Manifest.")
                 
         with open(manifest_path, 'w') as f:
             f.write(content)
     else:
         print("ERROR: AndroidManifest.xml not found at " + manifest_path)
 
-    # 3. Create android/app/proguard-rules.pro to ignore missing ML Kit classes during R8 minification
+    # 3. Modify styles.xml to add custom UCrop theme with fitsSystemWindows
+    styles_paths = [
+        os.path.join('android', 'app', 'src', 'main', 'res', 'values', 'styles.xml'),
+        os.path.join('android', 'app', 'src', 'main', 'res', 'values-night', 'styles.xml')
+    ]
+    ucrop_style = (
+        '    <style name="Theme.App.UCrop" parent="Theme.AppCompat.Light.NoActionBar">\n'
+        '        <item name="android:fitsSystemWindows">true</item>\n'
+        '    </style>\n'
+    )
+    for styles_path in styles_paths:
+        if os.path.exists(styles_path):
+            with open(styles_path, 'r') as f:
+                content = f.read()
+            if 'Theme.App.UCrop' not in content:
+                content = content.replace('</resources>', ucrop_style + '</resources>')
+                with open(styles_path, 'w') as f:
+                    f.write(content)
+                print(f"Successfully added Theme.App.UCrop to {styles_path}")
+
+    # 4. Create android/app/proguard-rules.pro to ignore missing ML Kit classes during R8 minification
     proguard_path = os.path.join('android', 'app', 'proguard-rules.pro')
     proguard_rules = "-dontwarn com.google.mlkit.vision.text.**\n"
     with open(proguard_path, 'w') as f:

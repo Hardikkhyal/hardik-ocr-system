@@ -58,7 +58,7 @@ if (Test-Path $gradlePath) {
     
     # 2. Register Proguard rules file
     if ($gradleContent -like "*signingConfig signingConfigs.debug*" -and $gradleContent -notlike "*proguardFiles*") {
-        $gradleContent = $gradleContent -replace 'signingConfig signingConfigs.debug', 'signingConfig signingConfigs.debug`r`n            proguardFiles getDefaultProguardFile(`'proguard-android-optimize.txt`'), `'proguard-rules.pro`'''
+        $gradleContent = $gradleContent -replace 'signingConfig signingConfigs.debug', "signingConfig signingConfigs.debug`r`n            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'"
         Write-Host "Successfully registered Proguard rules configuration in build.gradle." -ForegroundColor Green
     }
     
@@ -90,13 +90,34 @@ if (Test-Path $manifestPath) {
 
     # 2. Inject UCropActivity for image_cropper (if not present)
     if ($manifestContent -notlike "*com.yalantis.ucrop.UCropActivity*") {
-        $activityXml = "        <activity`n            android:name=`"com.yalantis.ucrop.UCropActivity`"`n            android:screenOrientation=`"portrait`"`n            android:theme=`"@style/Theme.AppCompat.Light.NoActionBar`"/>"
+        $activityXml = "        <activity`n            android:name=`"com.yalantis.ucrop.UCropActivity`"`n            android:screenOrientation=`"portrait`"`n            android:theme=`"@style/Theme.App.UCrop`"/>"
         # Insert activity inside <application> right after the starting tag
         $manifestContent = $manifestContent -replace '(<application[^>]*>)', "`$1`n$activityXml"
         Write-Host "Registered UCropActivity in Manifest." -ForegroundColor Green
+    } elseif ($manifestContent -like "*@style/Theme.AppCompat.Light.NoActionBar*") {
+        $manifestContent = $manifestContent -replace '@style/Theme.AppCompat.Light.NoActionBar', '@style/Theme.App.UCrop'
+        Write-Host "Updated UCropActivity theme to @style/Theme.App.UCrop in Manifest." -ForegroundColor Green
     }
 
     Set-Content $manifestPath $manifestContent
+
+    # 3. Add Custom UCrop theme to styles.xml files to support fitsSystemWindows (fixing status bar overlap)
+    $stylesPaths = @(
+        "android/app/src/main/res/values/styles.xml",
+        "android/app/src/main/res/values-night/styles.xml"
+    )
+    $ucropStyle = "    <style name=`"Theme.App.UCrop`" parent=`"Theme.AppCompat.Light.NoActionBar`">`r`n        <item name=`"android:fitsSystemWindows`">true</item>`r`n    </style>`r`n"
+    
+    foreach ($path in $stylesPaths) {
+        if (Test-Path $path) {
+            $content = Get-Content $path -Raw
+            if ($content -notlike "*Theme.App.UCrop*") {
+                $content = $content -replace '</resources>', "$ucropStyle</resources>"
+                Set-Content $path $content
+                Write-Host "Added Theme.App.UCrop to $path" -ForegroundColor Green
+            }
+        }
+    }
 } else {
     Write-Host "[ERROR] Could not find AndroidManifest.xml. Ensure 'flutter create' ran successfully." -ForegroundColor Red
     Exit
