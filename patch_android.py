@@ -3,7 +3,7 @@ import os
 def patch_project():
     print("Starting Android project patching...")
     
-    # 1. Modify android/app/build.gradle to set minSdkVersion to 21
+    # 1. Modify android/app/build.gradle to set minSdkVersion to 21 and register proguard rules
     gradle_path = os.path.join('android', 'app', 'build.gradle')
     if os.path.exists(gradle_path):
         with open(gradle_path, 'r') as f:
@@ -12,11 +12,16 @@ def patch_project():
         # Replace minSdkVersion flutter.minSdkVersion with minSdkVersion 21
         if 'minSdkVersion flutter.minSdkVersion' in content:
             content = content.replace('minSdkVersion flutter.minSdkVersion', 'minSdkVersion 21')
-            with open(gradle_path, 'w') as f:
-                f.write(content)
             print("Successfully updated minSdkVersion to 21 in build.gradle.")
-        else:
-            print("minSdkVersion already modified or different structure in build.gradle.")
+            
+        # Register proguard files inside release buildType
+        if 'signingConfig signingConfigs.debug' in content and 'proguardFiles' not in content:
+            proguard_lines = "signingConfig signingConfigs.debug\n            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'"
+            content = content.replace('signingConfig signingConfigs.debug', proguard_lines)
+            print("Successfully added Proguard rules path to build.gradle.")
+            
+        with open(gradle_path, 'w') as f:
+            f.write(content)
     else:
         print("ERROR: build.gradle not found at " + gradle_path)
 
@@ -57,6 +62,13 @@ def patch_project():
             f.write(content)
     else:
         print("ERROR: AndroidManifest.xml not found at " + manifest_path)
+
+    # 3. Create android/app/proguard-rules.pro to ignore missing ML Kit classes during R8 minification
+    proguard_path = os.path.join('android', 'app', 'proguard-rules.pro')
+    proguard_rules = "-dontwarn com.google.mlkit.vision.text.**\n"
+    with open(proguard_path, 'w') as f:
+        f.write(proguard_rules)
+    print("Successfully generated proguard-rules.pro.")
 
 if __name__ == '__main__':
     patch_project()

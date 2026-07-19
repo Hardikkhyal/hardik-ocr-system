@@ -43,19 +43,32 @@ if ($pubspecBackupExists) {
     Remove-Item "pubspec.yaml.bak" -Force
 }
 
-# Step 3: Configure Android Gradle (minSdkVersion = 21)
+# Step 3: Configure Android Gradle & Proguard Rules
 Write-Host "[3/5] Configuring Android build parameters..." -ForegroundColor Yellow
 $gradlePath = "android/app/build.gradle"
 
 if (Test-Path $gradlePath) {
     $gradleContent = Get-Content $gradlePath -Raw
+    
+    # 1. Update minSdkVersion to 21
     if ($gradleContent -like "*minSdkVersion flutter.minSdkVersion*") {
         $gradleContent = $gradleContent -replace 'minSdkVersion\s+flutter.minSdkVersion', 'minSdkVersion 21'
-        Set-Content $gradlePath $gradleContent
         Write-Host "Successfully updated minSdkVersion to 21 in build.gradle." -ForegroundColor Green
-    } else {
-        Write-Host "minSdkVersion is already custom or build.gradle has a different structure. Please verify manually." -ForegroundColor Gray
     }
+    
+    # 2. Register Proguard rules file
+    if ($gradleContent -like "*signingConfig signingConfigs.debug*" -and $gradleContent -notlike "*proguardFiles*") {
+        $gradleContent = $gradleContent -replace 'signingConfig signingConfigs.debug', 'signingConfig signingConfigs.debug`r`n            proguardFiles getDefaultProguardFile(`'proguard-android-optimize.txt`'), `'proguard-rules.pro`'''
+        Write-Host "Successfully registered Proguard rules configuration in build.gradle." -ForegroundColor Green
+    }
+    
+    Set-Content $gradlePath $gradleContent
+    
+    # 3. Create proguard-rules.pro file to ignore missing ML Kit classes during R8 minification
+    $proguardPath = "android/app/proguard-rules.pro"
+    $proguardRules = "-dontwarn com.google.mlkit.vision.text.**"
+    Set-Content $proguardPath $proguardRules
+    Write-Host "Successfully generated proguard-rules.pro." -ForegroundColor Green
 } else {
     Write-Host "[ERROR] Could not find android/app/build.gradle. Ensure 'flutter create' ran successfully." -ForegroundColor Red
     Exit
